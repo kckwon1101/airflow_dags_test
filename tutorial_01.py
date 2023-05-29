@@ -40,8 +40,8 @@ with DAG(
 
     # t1, t2 and t3 are examples of tasks created by instantiating operators
     t1 = BashOperator(
-        task_id="print_images",
-        bash_command="docker images",
+        task_id="print_echo",
+        bash_command="echo print test",
     )
 
     t2 = BashOperator(
