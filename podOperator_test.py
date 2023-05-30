@@ -9,7 +9,7 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
 
-dag_id = 'kubernetes-dag-crawler-success'
+dag_id = 'kubernetes-crawler-fail'
 
 with DAG(
     dag_id,
@@ -38,7 +38,7 @@ with DAG(
         task_id="kubernetespodoperator",
         namespace='airflow',
         in_cluster=True,
-        image='crawler-success:1.0.0',
+        image='crawler-fail:1.0.0',
     #     secrets=[
     #         env
     #     ],
