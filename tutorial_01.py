@@ -1,62 +1,82 @@
 from datetime import datetime, timedelta
+from textwrap import dedent
 
-from kubernetes.client import models as k8s
-from airflow.models import DAG, Variable
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.kubernetes.secret import Secret
-from airflow.kubernetes.pod import Resources
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
-    KubernetesPodOperator,
-)
+# The DAG object; we'll need this to instantiate a DAG
+from airflow import DAG
 
-dag_id = 'kubernetes-dag'
+# Operators; we need this to operate!
+from airflow.operators.bash import BashOperator
+with DAG(
+    "tutorial",
+    # These args will get passed on to each operator
+    # You can override them on a per-task basis during operator initialization
+    default_args={
+        "depends_on_past": False,
+        "email": ["airflow@example.com"],
+        "email_on_failure": False,
+        "email_on_retry": False,
+        "retries": 1,
+        "retry_delay": timedelta(minutes=5),
+        # 'queue': 'bash_queue',
+        # 'pool': 'backfill',
+        # 'priority_weight': 10,
+        # 'end_date': datetime(2016, 1, 1),
+        # 'wait_for_downstream': False,
+        # 'sla': timedelta(hours=2),
+        # 'execution_timeout': timedelta(seconds=300),
+        # 'on_failure_callback': some_function, # or list of functions
+        # 'on_success_callback': some_other_function, # or list of functions
+        # 'on_retry_callback': another_function, # or list of functions
+        # 'sla_miss_callback': yet_another_function, # or list of functions
+        # 'trigger_rule': 'all_success'
+    },
+    description="A simple tutorial DAG",
+    schedule=timedelta(days=1),
+    start_date=datetime(2021, 1, 1),
+    catchup=False,
+    tags=["example"],
+) as dag:
 
-task_default_args = {
-    'execution_timeout': timedelta(hours=1)
-}
+    # t1, t2 and t3 are examples of tasks created by instantiating operators
+    t1 = BashOperator(
+        task_id="print_echo",
+        bash_command="echo print test",
+    )
 
-dag = DAG(
-    dag_id=dag_id,
-    description='kubernetes pod operator',
-    default_args=task_default_args,
-    schedule_interval='0 * * * *',
-    max_active_runs=1
-)
+    t2 = BashOperator(
+        task_id="sleep",
+        depends_on_past=False,
+        bash_command="sleep 5",
+        retries=3,
+    )
+    t1.doc_md = dedent(
+        """\
+    #### Task Documentation
+    You can document your task using the attributes `doc_md` (markdown),
+    `doc` (plain text), `doc_rst`, `doc_json`, `doc_yaml` which gets
+    rendered in the UI's Task Instance Details page.
+    ![img](http://montcs.bloomu.edu/~bobmon/Semesters/2012-01/491/import%20soul.png)
+    **Image Credit:** Randall Munroe, [XKCD](https://xkcd.com/license.html)
+    """
+    )
 
-# env = Secret(
-#     'env',
-#     'TEST',
-#     'test_env',
-#     'TEST',
-# )
+    dag.doc_md = __doc__  # providing that you have a docstring at the beginning of the DAG; OR
+    dag.doc_md = """
+    This is a documentation placed anywhere
+    """  # otherwise, type it like this
+    templated_command = dedent(
+        """
+    {% for i in range(5) %}
+        echo "{{ ds }}"
+        echo "{{ macros.ds_add(ds, 7)}}"
+    {% endfor %}
+    """
+    )
 
-pod_resources = Resources()
-pod_resources.request_cpu = '1000m'
-pod_resources.request_memory = '512Mi'
-pod_resources.limit_cpu = '1000m'
-pod_resources.limit_memory = '1024Mi'
+    t3 = BashOperator(
+        task_id="templated",
+        depends_on_past=False,
+        bash_command=templated_command,
+    )
 
-
-# configmaps = [
-#     k8s.V1EnvFromSource(config_map_ref=k8s.V1ConfigMapEnvSource(name='secret')),
-# ]
-
-start = DummyOperator(task_id="start", dag=dag)
-
-run = KubernetesPodOperator(
-    task_id="kubernetespodoperator",
-    namespace='airflow',
-    image='crawler_test',
-#     secrets=[
-#         env
-#     ],
-#     image_pull_secrets=[k8s.V1LocalObjectReference('image_credential')],
-    name="job",
-    is_delete_operator_pod=True,
-    get_logs=True,
-    resources=pod_resources,
-    env_from=configmaps,
-    dag=dag,
-)
-
-start >> run
+    t1 >> [t2, t3]
