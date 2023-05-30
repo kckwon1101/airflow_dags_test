@@ -9,7 +9,7 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
 
-dag_id = 'kubernetes-dag'
+dag_id = 'kubernetes-dag-crawler-success'
 
 task_default_args = {
     'execution_timeout': timedelta(hours=1)
@@ -41,12 +41,13 @@ dag = DAG(
 #     k8s.V1EnvFromSource(config_map_ref=k8s.V1ConfigMapEnvSource(name='secret')),
 # ]
 
-start = DummyOperator(task_id="start", dag=dag)
+# start = DummyOperator(task_id="start", dag=dag)
 
 run = KubernetesPodOperator(
     task_id="kubernetespodoperator",
     namespace='airflow',
-    image='crawler_success:1.0.0',
+    in_cluster=True,
+    image='crawler-success:1.0.0',
 #     secrets=[
 #         env
 #     ],
@@ -65,4 +66,5 @@ pod_task_xcom_result = BashOperator(
         task_id="pod_task_xcom_result",
     )
 
-start >> run >> pod_task_xcom_result
+# start >> 
+run >> pod_task_xcom_result
