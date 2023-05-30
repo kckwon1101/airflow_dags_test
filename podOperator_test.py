@@ -18,9 +18,8 @@ dag = DAG(
     dag_id=dag_id,
     description='kubernetes pod operator',
     default_args=task_default_args,
-    start_date = datetime(2023,6,1),
-    schedule_interval='0 * * * *',
-    max_active_runs=1
+    start_date=datetime(2023,6,1),
+    schedule_interval='0 * * * *'
 )
 
 # env = Secret(
