@@ -44,7 +44,7 @@ start = DummyOperator(task_id="start", dag=dag)
 
 run = KubernetesPodOperator(
     task_id="kubernetespodoperator",
-    namespace='airflo'w,
+    namespace='airflow',
     image='crawler_test',
 #     secrets=[
 #         env
