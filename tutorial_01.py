@@ -78,5 +78,11 @@ with DAG(
         depends_on_past=False,
         bash_command=templated_command,
     )
+    
+    t4 = BashOperator(
+        task_id="docker-run",
+        depends_on_past=False,
+        bash_command="docker run crawler-success:1.0.0",
+    )
 
-    t1 >> [t2, t3]
+    t1 >> [t2, t3, t4]
