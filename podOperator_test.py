@@ -34,7 +34,7 @@ with DAG(
 
     echo = BashOperator(
         task_id="print_echo",
-        bash_command="echo print test",
+        bash_command=f"echo print test: {appname}",
     )
 
     run = KubernetesPodOperator(
@@ -53,7 +53,7 @@ with DAG(
     #     env_from=configmaps,
         dag=dag,
         do_xcom_push=True,
-        arguments=["f'--app.name={appname}'"]
+        arguments=[f"--app.name={appname}"]
     )
 
     # start >> 
