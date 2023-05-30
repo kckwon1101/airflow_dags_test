@@ -45,7 +45,7 @@ start = DummyOperator(task_id="start", dag=dag)
 run = KubernetesPodOperator(
     task_id="kubernetespodoperator",
     namespace='airflow',
-    image='crawler_test',
+    image='crawler_success:1.0.0',
 #     secrets=[
 #         env
 #     ],
@@ -56,6 +56,12 @@ run = KubernetesPodOperator(
 #     resources=pod_resources,
 #     env_from=configmaps,
     dag=dag,
+    do_xcom_push=True,
 )
 
-start >> run
+pod_task_xcom_result = BashOperator(
+        bash_command="echo \"{{ task_instance.xcom_pull('write-xcom')[0] }}\"",
+        task_id="pod_task_xcom_result",
+    )
+
+start >> run >> pod_task_xcom_result
