@@ -18,8 +18,8 @@ dag = DAG(
     dag_id=dag_id,
     description='kubernetes pod operator',
     default_args=task_default_args,
+    start_date = datetime(2023,6,1),
     schedule_interval='0 * * * *',
-    start_date = datetime.now() - timedelta(days=1)
     max_active_runs=1
 )
 
@@ -45,7 +45,7 @@ start = DummyOperator(task_id="start", dag=dag)
 
 run = KubernetesPodOperator(
     task_id="kubernetespodoperator",
-    namespace='development',
+    namespace='airflo'w,
     image='crawler_test',
 #     secrets=[
 #         env
