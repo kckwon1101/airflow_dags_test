@@ -43,6 +43,11 @@ dag = DAG(
 
 # start = DummyOperator(task_id="start", dag=dag)
 
+echo = BashOperator(
+        task_id="print_echo",
+        bash_command="echo print test",
+    )
+
 run = KubernetesPodOperator(
     task_id="kubernetespodoperator",
     namespace='airflow',
@@ -67,4 +72,4 @@ pod_task_xcom_result = BashOperator(
     )
 
 # start >> 
-run >> pod_task_xcom_result
+echo >> run >> pod_task_xcom_result
