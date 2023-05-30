@@ -4,7 +4,6 @@ from kubernetes.client import models as k8s
 from airflow.models import DAG, Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.kubernetes.secret import Secret
-from airflow.kubernetes.pod import Resources
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
@@ -30,11 +29,11 @@ dag = DAG(
 #     'TEST',
 # )
 
-pod_resources = Resources()
-pod_resources.request_cpu = '1000m'
-pod_resources.request_memory = '512Mi'
-pod_resources.limit_cpu = '1000m'
-pod_resources.limit_memory = '1024Mi'
+# pod_resources = Resources()
+# pod_resources.request_cpu = '1000m'
+# pod_resources.request_memory = '512Mi'
+# pod_resources.limit_cpu = '1000m'
+# pod_resources.limit_memory = '1024Mi'
 
 
 # configmaps = [
@@ -54,7 +53,7 @@ run = KubernetesPodOperator(
     name="job",
     is_delete_operator_pod=True,
     get_logs=True,
-    resources=pod_resources,
+#     resources=pod_resources,
     env_from=configmaps,
     dag=dag,
 )
