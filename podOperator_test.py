@@ -8,8 +8,11 @@ from airflow.kubernetes.secret import Secret
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
+from airflow.models import Variable
 
-dag_id = 'kubernetes-crawler-fail'
+appname = Variable.get("appname_secret")
+
+dag_id = 'kubernetes-crawler-success'
 
 with DAG(
     dag_id,
@@ -38,7 +41,7 @@ with DAG(
         task_id="kubernetespodoperator",
         namespace='airflow',
         in_cluster=True,
-        image='crawler-fail:1.0.0',
+        image='crawler-success:1.0.0',
     #     secrets=[
     #         env
     #     ],
@@ -50,12 +53,8 @@ with DAG(
     #     env_from=configmaps,
         dag=dag,
         do_xcom_push=True,
+        arguments=["f'--app.name={appname}'"]
     )
 
-    pod_task_xcom_result = BashOperator(
-            bash_command="echo \"{{ task_instance.xcom_pull('write-xcom')[0] }}\"",
-            task_id="pod_task_xcom_result",
-        )
-
     # start >> 
-    echo >> run >> pod_task_xcom_result
+    echo >> run
